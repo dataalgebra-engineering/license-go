@@ -1,0 +1,9 @@
+# Containerized verification for license-go (SPEC-001).
+# Tests run as a build step — if the image builds, the suite passed.
+# Uses COPY (not bind mount) so no Docker Desktop file-sharing config is needed.
+FROM golang:1.23
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN go vet ./... && go test ./... -race -coverprofile=coverage.txt && go build ./...
