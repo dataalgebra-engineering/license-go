@@ -26,8 +26,9 @@ const (
 type Plan string
 
 const (
-	PlanStandard Plan = "standard"
-	PlanPro      Plan = "pro"
+	PlanStandard   Plan = "standard"
+	PlanPro        Plan = "pro"
+	PlanEnterprise Plan = "enterprise"
 )
 
 // LicenseClaims is the shared JWT claim set for a Burnside license token and
