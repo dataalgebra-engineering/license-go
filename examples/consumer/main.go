@@ -14,7 +14,7 @@ import (
 	"os"
 	"time"
 
-	license "github.com/burnsideproject/license-go"
+	license "github.com/dataalgebra-engineering/license-go"
 )
 
 func main() {

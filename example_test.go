@@ -12,7 +12,7 @@ import (
 	"net/http/httptest"
 	"time"
 
-	license "github.com/burnsideproject/license-go"
+	license "github.com/dataalgebra-engineering/license-go"
 	"github.com/golang-jwt/jwt/v5"
 )
 

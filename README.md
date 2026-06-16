@@ -5,7 +5,7 @@ Public, dependency-light Go module for verifying Burnside license tokens
 license JWT against Burnside's JWKS.
 
 ```
-go get github.com/burnsideproject/license-go
+go get github.com/dataalgebra-engineering/license-go
 ```
 
 The only runtime dependency (added in TICKET-005/007) is `golang-jwt/jwt/v5`.

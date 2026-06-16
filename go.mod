@@ -1,4 +1,4 @@
-module github.com/burnsideproject/license-go
+module github.com/dataalgebra-engineering/license-go
 
 go 1.23
 
