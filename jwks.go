@@ -17,15 +17,22 @@ import (
 // is attempted. Rotation overlap (one token TTL) means a modest age is safe.
 const DefaultJWKSMaxAge = time.Hour
 
+// DefaultJWKSFailOpenTTL caps how long a cached key may be served when refreshes
+// keep failing. Fail-open keeps a valid deployment working through a brief
+// outage, but an unbounded window would let a revoked/compromised key be trusted
+// forever — so past this age (since the last successful fetch) we fail closed.
+const DefaultJWKSFailOpenTTL = 24 * time.Hour
+
 // JWKSClient fetches and caches Burnside's ES256 public keys (JWKS) for offline
 // token verification. It refreshes on an unknown `kid` or when the cache is
 // stale, and is **fail-open within token validity**: if a refresh fails it
 // keeps serving the cached key so a brief outage or a rotation first seen
 // offline does not strand a still-valid deployment.
 type JWKSClient struct {
-	url    string
-	hc     *http.Client
-	maxAge time.Duration
+	url         string
+	hc          *http.Client
+	maxAge      time.Duration
+	failOpenTTL time.Duration
 
 	mu        sync.RWMutex
 	keys      map[string]*ecdsa.PublicKey
@@ -41,14 +48,22 @@ func WithHTTPClient(hc *http.Client) JWKSOption { return func(c *JWKSClient) { c
 // WithMaxAge sets the cache freshness window.
 func WithMaxAge(d time.Duration) JWKSOption { return func(c *JWKSClient) { c.maxAge = d } }
 
+// WithFailOpenTTL caps how long a cached key is served while refreshes fail
+// (default DefaultJWKSFailOpenTTL). After this age since the last successful
+// fetch, the client fails closed instead of serving a stale key.
+func WithFailOpenTTL(d time.Duration) JWKSOption {
+	return func(c *JWKSClient) { c.failOpenTTL = d }
+}
+
 // NewJWKSClient builds a client for the JWKS at url (e.g.
 // https://license.burnsideproject.ai/.well-known/jwks.json).
 func NewJWKSClient(url string, opts ...JWKSOption) *JWKSClient {
 	c := &JWKSClient{
-		url:    url,
-		hc:     &http.Client{Timeout: 5 * time.Second},
-		maxAge: DefaultJWKSMaxAge,
-		keys:   map[string]*ecdsa.PublicKey{},
+		url:         url,
+		hc:          &http.Client{Timeout: 5 * time.Second},
+		maxAge:      DefaultJWKSMaxAge,
+		failOpenTTL: DefaultJWKSFailOpenTTL,
+		keys:        map[string]*ecdsa.PublicKey{},
 	}
 	for _, o := range opts {
 		o(c)
@@ -70,12 +85,19 @@ func (c *JWKSClient) KeyByID(ctx context.Context, kid string) (*ecdsa.PublicKey,
 	}
 
 	if err := c.Refresh(ctx); err != nil {
-		// Fail-open: a still-cached key keeps a valid deployment working.
+		// Fail-open, but only within failOpenTTL of the last successful fetch: a
+		// still-cached key keeps a valid deployment working through a brief
+		// outage, while a prolonged outage fails closed so a revoked/compromised
+		// key is not trusted indefinitely.
 		c.mu.RLock()
 		key, ok = c.keys[kid]
+		withinGrace := !c.fetchedAt.IsZero() && time.Since(c.fetchedAt) < c.failOpenTTL
 		c.mu.RUnlock()
-		if ok {
+		if ok && withinGrace {
 			return key, nil
+		}
+		if ok {
+			return nil, fmt.Errorf("jwks: refresh failed and cached kid %q is stale beyond fail-open TTL %s: %w", kid, c.failOpenTTL, err)
 		}
 		return nil, fmt.Errorf("jwks: refresh failed and kid %q not cached: %w", kid, err)
 	}
