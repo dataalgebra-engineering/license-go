@@ -117,6 +117,24 @@ func TestJWKS_FailOpenServesCached(t *testing.T) {
 	}
 }
 
+func TestJWKS_FailClosedBeyondFailOpenTTL(t *testing.T) {
+	k := newKey(t)
+	srv, _ := jwksServer(t, map[string]*ecdsa.PublicKey{"kid-1": &k.PublicKey})
+
+	// maxAge=0 forces a refresh every call; a tiny failOpenTTL means that once
+	// the server is unreachable and the cache ages past it, we fail closed.
+	c := NewJWKSClient(srv.URL, WithMaxAge(0), WithFailOpenTTL(5*time.Millisecond))
+	if _, err := c.KeyByID(context.Background(), "kid-1"); err != nil {
+		t.Fatalf("prime: %v", err)
+	}
+	srv.Close()
+	time.Sleep(10 * time.Millisecond) // age past failOpenTTL
+
+	if _, err := c.KeyByID(context.Background(), "kid-1"); err == nil {
+		t.Error("expected fail-closed once cache aged beyond fail-open TTL")
+	}
+}
+
 func TestJWKS_StaleTriggersRefetch(t *testing.T) {
 	k := newKey(t)
 	srv, hits := jwksServer(t, map[string]*ecdsa.PublicKey{"kid-1": &k.PublicKey})
