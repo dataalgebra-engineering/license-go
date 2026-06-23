@@ -1,0 +1,47 @@
+name: Task (Ticket)
+description: One Task per TICKET-XXX. Sub-issue of an Epic.
+title: "[TASK] TICKET-XXX: <title>"
+labels: ["task"]
+body:
+  - type: input
+    id: ticket
+    attributes:
+      label: Ticket ID
+      placeholder: TICKET-044
+    validations:
+      required: true
+  - type: input
+    id: spec
+    attributes:
+      label: Parent Spec / Epic
+      placeholder: SPEC-005
+    validations:
+      required: true
+  - type: input
+    id: ticket_file
+    attributes:
+      label: Ticket file (canonical)
+      placeholder: tickets/ready/TICKET-044-....md
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope / deps
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Definition of done (gates)
+      value: |
+        - [ ] CI green (lint/unit/contract/integration)
+        - [ ] verification doc present (VERIFY-SPEC-XXX)
+        - [ ] CODEOWNERS approved (role per changed path)
+    validations:
+      required: true
+  - type: dropdown
+    id: stage
+    attributes:
+      label: Stage
+      options: [Tickets, Code, Test, Verify, Review, Deploy, Observe, Done]
+    validations:
+      required: true

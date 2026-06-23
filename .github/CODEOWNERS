@@ -1,0 +1,18 @@
+# Maps .ai review roles to ENFORCED approvals (branch ruleset: require_code_owner_review).
+# Teams under @dataalgebra-engineering must exist before "require code owner review"
+# is flipped on; until then rules are advisory. license-go is the shared WIRE
+# CONTRACT, so the contract surface needs security-architect sign-off.
+
+# The contract surface (root *.go: claims, verify, jwks, wire, plan)
+/*.go                     @dataalgebra-engineering/backend-engineer @dataalgebra-engineering/security-architect
+
+# Consumer + examples
+/consumer/**              @dataalgebra-engineering/backend-engineer
+/examples/**              @dataalgebra-engineering/backend-engineer
+
+# Docs + CI
+/docs/**                  @dataalgebra-engineering/architect
+/.github/**               @dataalgebra-engineering/release-engineer
+
+# Test code
+/*_test.go                @dataalgebra-engineering/test-engineer
