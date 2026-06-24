@@ -4,15 +4,15 @@
 # CONTRACT, so the contract surface needs security-architect sign-off.
 
 # The contract surface (root *.go: claims, verify, jwks, wire, plan)
-/*.go                     @dataalgebra-engineering/backend-engineer @dataalgebra-engineering/security-architect
+/*.go                     @daedmonds
 
 # Consumer + examples
-/consumer/**              @dataalgebra-engineering/backend-engineer
-/examples/**              @dataalgebra-engineering/backend-engineer
+/consumer/**              @daedmonds
+/examples/**              @daedmonds
 
 # Docs + CI
-/docs/**                  @dataalgebra-engineering/architect
-/.github/**               @dataalgebra-engineering/release-engineer
+/docs/**                  @daedmonds
+/.github/**               @daedmonds
 
 # Test code
-/*_test.go                @dataalgebra-engineering/test-engineer
+/*_test.go                @daedmonds
