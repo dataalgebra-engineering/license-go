@@ -60,9 +60,6 @@ func Example_verify() {
 // mustJWKS serves a JWKS for the example (mirrors the test helper, kept here so
 // the example is self-contained godoc).
 func mustJWKS(keys map[string]*ecdsa.PublicKey) *httptest.Server {
-	type jwk struct {
-		Kty, Crv, Kid, X, Y, Alg, Use string
-	}
 	pad := func(b []byte) string {
 		const n = 32
 		if len(b) < n {
