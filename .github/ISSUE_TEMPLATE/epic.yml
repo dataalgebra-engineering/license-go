@@ -1,0 +1,39 @@
+name: Epic (Spec)
+description: One Epic per SPEC-XXX. Long-form spec stays as a file; this tracks delivery.
+title: "[EPIC] SPEC-XXX: <title>"
+labels: ["epic"]
+body:
+  - type: input
+    id: spec
+    attributes:
+      label: Spec ID
+      placeholder: SPEC-005
+    validations:
+      required: true
+  - type: input
+    id: spec_file
+    attributes:
+      label: Spec file (canonical)
+      placeholder: docs/specs/SPEC-005-.../spec.md
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: One paragraph. Acceptance criteria live in the spec file.
+    validations:
+      required: true
+  - type: textarea
+    id: tasks
+    attributes:
+      label: Tasks (sub-issues)
+      description: List TICKET-XXX; link as sub-issues after creation.
+      placeholder: "- [ ] TICKET-044 ...\n- [ ] TICKET-045 ..."
+  - type: dropdown
+    id: stage
+    attributes:
+      label: Stage
+      options: [Brief, Spec, Tickets, Code, Test, Verify, Review, Deploy, Observe, Done]
+    validations:
+      required: true

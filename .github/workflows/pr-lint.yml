@@ -1,0 +1,33 @@
+# Gates PR titles: conventional-commit format AND a ticket/spec reference (in
+# title or body). Add the label 'skip-ticket' to a PR to bypass the reference
+# check (for infra/factory PRs with no ticket). Required status check: pr-lint.
+name: pr-lint
+on:
+  pull_request:
+    types: [opened, edited, synchronize, labeled, unlabeled, reopened]
+
+jobs:
+  pr-lint:
+    name: pr-lint
+    runs-on: ubuntu-latest
+    env:
+      PR_TITLE: ${{ github.event.pull_request.title }}
+      PR_BODY: ${{ github.event.pull_request.body }}
+      SKIP_TICKET: ${{ contains(github.event.pull_request.labels.*.name, 'skip-ticket') }}
+    steps:
+      - name: conventional title
+        run: |
+          set -euo pipefail
+          re='^(feat|fix|chore|docs|refactor|test|perf|ci|build|style|revert)(\([a-z0-9._-]+\))?(!)?: .+'
+          if [[ ! "$PR_TITLE" =~ $re ]]; then
+            echo "::error::PR title must be conventional, e.g. 'feat(scope): summary'. Got: $PR_TITLE"; exit 1
+          fi
+      - name: ticket/spec reference
+        run: |
+          set -euo pipefail
+          if [ "$SKIP_TICKET" = "true" ]; then echo "::notice::skip-ticket label present — skipping reference check"; exit 0; fi
+          if printf '%s\n%s' "$PR_TITLE" "$PR_BODY" | grep -qE '(TICKET-[0-9]+|SPEC-[0-9]+)'; then
+            echo "OK: references a TICKET/SPEC"
+          else
+            echo "::error::PR must reference a TICKET-NNN or SPEC-NNN (in title or body), or carry the 'skip-ticket' label"; exit 1
+          fi

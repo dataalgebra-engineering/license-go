@@ -1,0 +1,24 @@
+# Factory Verify-stage gate (separate file so it does NOT collide with the
+# existing ci.yml). Lenient while verification/ is being established in-repo:
+# passes with a notice if the dir is absent; enforces content once it exists.
+name: factory-verification
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  verification:
+    name: factory-verification
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: require verification record
+        run: |
+          set -euo pipefail
+          if [ ! -d verification ]; then echo "::notice::no verification/ yet — bootstrapping"; exit 0; fi
+          shopt -s nullglob
+          docs=(verification/reviews/VERIFY-SPEC-*.md verification/results/SPEC-*.md)
+          if [ ${#docs[@]} -eq 0 ]; then echo "::error::verification/ present but no VERIFY/results doc"; exit 1; fi
+          for d in "${docs[@]}"; do
+            grep -qi "acceptance" "$d" || { echo "::error::$d missing acceptance criteria"; exit 1; }
+          done
