@@ -31,20 +31,27 @@ const (
 	PlanEnterprise Plan = "enterprise"
 )
 
-// LicenseClaims is the shared JWT claim set for a Burnside license token and
+// Claims is the shared JWT claim set for a Burnside license token and
 // the single source of truth imported by both the issuer (backend) and the
 // offline Verifier. The embedded jwt.RegisteredClaims carries the standard
 // claims (iss, sub, aud, exp, iat, jti, nbf).
 //
 // Note: this contract depends only on golang-jwt/jwt — never aws-sdk-go-v2 —
 // keeping the module dependency-light for customer import.
-type LicenseClaims struct {
+type Claims struct {
 	Plan    Plan    `json:"plan"`
 	Channel Channel `json:"channel"`
 
 	jwt.RegisteredClaims
 }
 
-// Compile-time guarantee that LicenseClaims satisfies the jwt.Claims interface
+// Compile-time guarantee that Claims satisfies the jwt.Claims interface
 // so it can be signed and verified by golang-jwt.
-var _ jwt.Claims = (*LicenseClaims)(nil)
+var _ jwt.Claims = (*Claims)(nil)
+
+// LicenseClaims is the former name of Claims.
+//
+// Deprecated: use Claims. Kept as a back-compat alias for existing importers;
+// it will be removed in a future major version.
+//nolint:revive // intentional deprecated alias on the public contract
+type LicenseClaims = Claims
